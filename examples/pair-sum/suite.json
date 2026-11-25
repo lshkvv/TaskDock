@@ -1,0 +1,10 @@
+{
+  "candidate": "solution.exe",
+  "reference": "reference.exe",
+  "generator": "generator.exe",
+  "compare": "exact",
+  "timeout_ms": 2000,
+  "output_limit_bytes": 1048576,
+  "seed": 42,
+  "size": 6
+}
