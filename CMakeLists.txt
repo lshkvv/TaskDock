@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(taskdock
   src/main.cpp
   src/process/process_runner.cpp
+  src/suite.cpp
 )
 if(WIN32)
   target_compile_definitions(taskdock PRIVATE UNICODE _UNICODE NOMINMAX WIN32_LEAN_AND_MEAN)

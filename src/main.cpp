@@ -1,4 +1,6 @@
 #include "process_runner.hpp"
+#include "suite.hpp"
+#include "util.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -9,24 +11,6 @@
 #include <vector>
 
 namespace {
-
-std::wstring quote_arg(const std::wstring& arg) {
-    if (arg.empty()) {
-        return L"\"\"";
-    }
-    if (arg.find_first_of(L" \t\"") == std::wstring::npos) {
-        return arg;
-    }
-    std::wstring out = L"\"";
-    for (wchar_t ch : arg) {
-        if (ch == L'"') {
-            out += L'\\';
-        }
-        out += ch;
-    }
-    out += L'"';
-    return out;
-}
 
 std::vector<std::wstring> command_args() {
     int argc = 0;
@@ -43,7 +27,25 @@ std::vector<std::wstring> command_args() {
 
 int main() {
     std::vector<std::wstring> args = command_args();
-    if (args.size() < 3 || args[1] != L"run") {
+    if (args.size() < 2) {
+        std::cout << "taskdock run <exe> [args...]\n";
+        std::cout << "taskdock suite <suite.json>\n";
+        return 2;
+    }
+    if (args[1] == L"suite") {
+        if (args.size() < 3) {
+            std::cout << "taskdock suite <suite.json>\n";
+            return 2;
+        }
+        Suite suite = load_suite(wide_to_utf8(args[2]));
+        if (!suite.error.empty()) {
+            std::cerr << suite.error << '\n';
+            return 1;
+        }
+        print_suite(suite);
+        return 0;
+    }
+    if (args[1] != L"run" || args.size() < 3) {
         std::cout << "taskdock run <exe> [args...]\n";
         return 2;
     }
@@ -55,7 +57,6 @@ int main() {
         request.command_line += L" ";
         request.command_line += quote_arg(args[i]);
     }
-
     RunResult result = run_process(request);
     if (!result.started) {
         std::cerr << "START_ERROR " << result.win_error << '\n';
